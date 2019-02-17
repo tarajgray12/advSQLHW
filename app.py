@@ -25,8 +25,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start date<br/>"
-        f"/api/v1.0/start and end"
+        f"/api/v1.0/temp/<start_date><br/>"
+        f"/api/v1.0/temp/<start>/<end>"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -52,9 +52,15 @@ def tobs():
     tobsdata = list(np.ravel(tempdata))
     return jsonify(tobsdata)
 
+app.route("/api/v1.0/temp/<start_date>")
+def start_date(start_date):
+    start = session.query("select station, min(tobs), max(tobs), avg(tobs) from Measurement where date >= ? group by(station)", (start_date,)).fetchall()
+    return jsonify(start)
 
-
-
+@app.route("/api/v1.0/temp/<start>/<end>")
+def stats(start_date, end_date):
+    dates = session.query("select station, min(tobs), max(tobs), avg(tobs) from Measurement where date >= ? and date <= ? group by(station)", (start_date,end_date,)).fetchall()
+    return jsonify(dates)
 
 if __name__ == "__main__":
     app.run(debug=True)
